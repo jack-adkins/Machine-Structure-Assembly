@@ -1,0 +1,27 @@
+*******************************************************************************
+* Hw2: iii
+* Comp 40 Fall 2024
+* README
+* Author: Jack Adkins (jadkin05) and Krish Dhayal (kdhaya01) 
+*******************************************************************************
+
+Acknowledgments: 
+----------------
+We used help from many TAs during office hours, the Hanson textbook for 
+understanding various Hanson structure implementations, and course references
+for the pnm reader interface.
+
+
+Implementations:
+----------------
+Both our Bit2 and UArray2 .c and .h files are completed and passing all the
+tests we've given them so far without any memory leaks. Sudoku is also fully
+implemented to the specifications from the spec. Unblackedges is able to take
+input, check if its a pbm file, read it in, and output the Bit2 back into 
+pbm format. It is able to find the outer black edges, but has not been able to
+unblack the black edges towards the center of the pbm.
+
+
+Hours Spent: 
+------------
+Around 15-20 hours total.
