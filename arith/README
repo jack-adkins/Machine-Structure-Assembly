@@ -1,0 +1,37 @@
+*******************************************************************************
+* Hw4: Arith
+* Comp 40 Fall 2024
+* README
+* Author: Jack Adkins (jadkin05) and Arshiya Lall (alall01) 
+*******************************************************************************
+
+
+Architecture: 
+----------------
+Our bitpack.c file contains our implementations for the six bitpack functions
+used in the compression and decompression process. Our compress40.c file
+contains all the other function definitions and implementations used for
+compression and decompression, with the compression functions together and the
+decompression functions below them.
+
+
+Acknowledgments: 
+----------------
+We used help from many TAs during office hours (thank you), the solution
+implementations for files from past homeworks, and course references for 
+the various confusing bitpack operators.
+
+
+Implementations:
+----------------
+Our bitpack.c is fully implemented and has passed all of the unit tests we've
+given it so far. Our compress40.c is fully implemented and can handle both 
+the -c and -d commands, both of which pass fully pass valgrind. Our ppmdiff 
+is also implemented and working, and we currently are getting a score of
+0.0196 when ran on flowers.ppm.
+
+
+Hours Spent: 
+------------
+Around 10 hours spent analyzing.
+Around 12 hours spent solving.
