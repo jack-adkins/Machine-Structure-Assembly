@@ -1,0 +1,82 @@
+*******************************************************************************
+* Hw3: locality
+* Comp 40 Fall 2024
+* README
+* Author: Jack Adkins (jadkin05) and Krish Dhayal (kdhaya01) 
+*******************************************************************************
+
+Acknowledgments: 
+----------------
+We mostly referred to the TAs during office hours for any help we needed.
+Any other times where we needed help or could not reach out to office hours
+We also used c library information sites for help understanding certain
+libraries we wanted to include.
+
+
+Implementations:
+----------------
+All required commands for ppmtrans have been implemented and are working along
+with our a2methods suite and uarray2b implementations. We did not implement
+the flip and transpose commands, but they have been dealt with to return an
+error when called. We have had some issues with the ppmwrite but for most
+images it has been able to output and then display.
+
+
+Architecture:
+-------------
+For Uarray2b we implement according to the example provided in the design spec,
+more specifically as its own struct that contains a Uarray2 object, we also
+designed it such that row major mapping will execute much faster as the 
+individual Uarray blocks represent a row of the 2D and are stored together in
+memory. Our ppmtrans has a main function that reads in the input the handles 
+all the possible commands/queries with the help of helper functions for the
+larger tasks like rotations and writing. For the rotations themselves we create
+a new pnm_ppm object to place the pixels from the image into at their rotated
+coordinates, and for the 0 degree rotation we just fill a new object with all
+the same pixels in the same location.
+
+
+Part E Performance:
+-------------------
+For our performance tetsing we used a larger 8160 x 6120 pixel (w x h)
+image to run our rotations on. Below is the table of our results, all time
+data is measured in seconds:
+
+Image Size: 8160 x 6120 pixels
+
+---------------------------------------------------
+| Rotation |   Total Time   |    Time per pixel   |
+---------------------------------------------------
+|    90    |    5.864617    |     0.0000001174    |
+|    180   |    3.072950    |     0.0000000615    |
+|    270   |    6.122684    |     0.0000001226    |
+|    0     |    2.563148    |     0.0000000513    |
+---------------------------------------------------
+
+Using the assumption that 1,000,000,000 instructions are executed per second
+by our computer, we get the following table of instructions per pixel:
+
+--------------------------------------------------
+| Rotation |   Instructions per pixel rotation   |
+--------------------------------------------------
+|    90    |               117.4                 |
+|    180   |               61.5                  |
+|    270   |               122.6                 |
+|    0     |               51.3                  |
+--------------------------------------------------
+
+The computer that all this data was collected on:
+model           : 85
+model name      : Intel(R) Xeon(R) Silver 4214Y CPU @ 2.20GHz
+
+Bsed on our testing we found that in general using plain arrays vs blocked
+arrays did not make a significant impact on the total time it would take
+each rotation to run. Originally we predicted that using plain arrays, and
+specifically row-major mapping would b efaster than its blocked counterpart,
+but in actuality them being similar makes sense as we forgot to account for
+the fact that when the blocksize is larger than the width of the 2D array the
+plain version will start to miss more.
+
+Hours Spent: 
+------------
+Around 20 hours total.
