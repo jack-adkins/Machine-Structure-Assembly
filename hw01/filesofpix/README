@@ -1,0 +1,28 @@
+*******************************************************************************
+* Hw1: filesofpix
+* Comp 40 Fall 2024
+* README
+* Author: Jack Adkins (jadkin05) and Krish Dhayal (kdhaya01) 
+*******************************************************************************
+
+Acknowledgments: 
+----------------
+We used help from TAs during office hours, and used stack overflow for help
+dealing with syntax errors and learning about c libraries for things like
+malloc, strcmp, and stderr output.
+
+
+Implementations:
+----------------
+Readaline has been fully implemented to work with files 1000 characters or
+less. The same goes for the rest of our functions that rely on readaline. 
+Restoration.c contains the main function for the program, and the rest of
+our helper functions are defined in sequences.h and implemented in sequences.c.
+We are managing to free all our sequences, but are still getting memory leaks 
+from valgrind due to our malloc pointers that we didn't figure out how to free
+without losing data we still needed from them.
+
+
+Hours Spent: 
+------------
+Around 20 hours total so far.
