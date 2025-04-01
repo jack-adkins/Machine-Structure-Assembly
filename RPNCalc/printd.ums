@@ -1,0 +1,129 @@
+.section init
+    .temps r6, r7
+    r0 := 0
+    .zero r0
+
+.section text
+    ####################################################################
+    # print_new_line
+    # pushes the counter for the number we want to print onto the callstack
+    # then starts the printing loop
+    ####################################################################
+    print_new_line:
+        r4 := m[r0][r2]
+
+        if (m[r0][r2] == 0) goto waiting using r4
+        push 0 on stack r2
+        goto print_loop
+    ####################################################################
+    # print_loop
+    # outputs the numbers on the calcstack with the proper formatting
+    ####################################################################
+    print_loop:
+        pop r1 off stack r2
+
+        if (r1 == m[r0][r2]) goto print_exit using r4
+        if (r1 == 0) goto print_loop_cont
+        output "\n"
+        goto print_loop_cont
+
+    ####################################################################
+    # print_loop_cont
+    # used in the print loop to ensure that a new line isn't printed
+    # for the first element
+    ####################################################################
+    print_loop_cont:
+        r5 := r1 + r3
+        r5 := m[r0][r5] # num to be printed
+        r1 := r1 + 1
+    
+        push r1 on stack r2 # HERE
+
+        output ">>> "
+
+        if (r5 == 0) goto print_0
+        push r5 on stack r2 # + 1
+        if (r5 >s 0) goto divisor_loop_setup using r4
+        if (r5 <s 0) goto neg_setup using r4
+    neg_setup:
+        output "-"
+        r5 := -r5
+        push 1 on stack r2 # + 2
+        goto neg_divisor_loop
+    neg_divisor_loop:
+        r4 := r5 / r1
+        if (r4 <s 10) goto neg_counter_loop_setup using r1
+        pop r1 off stack r2 # + 1
+        r1 := r1 * 10
+        push r1 on stack r2 # + 2
+        goto neg_divisor_loop
+    neg_counter_loop_setup:
+        pop r1 off stack r2 # + 1
+        goto neg_counter_loop
+    neg_counter_loop:
+        if (r1 <=s 0) goto cleanup_stack using r4
+        r4 := r5 / r1
+        output r4 + '0'
+        r5 := r5 mod r1
+        r1 := r1 / 10
+        goto neg_counter_loop
+    ####################################################################
+    # divisor_loop_setup
+    # (part of print_loop) sets the counter for the divisor loop then goes
+    # there
+    ####################################################################
+    divisor_loop_setup:
+        r1 := 0
+        goto divisor_loop
+    ####################################################################
+    # divisor_loop
+    # (part of print_loop) TODO TODO TODO TODO
+    ####################################################################
+    divisor_loop:
+        if (r5 <=s 0) goto counter_loop_setup using r4
+        r4 := 0
+        r4 := r5 mod 10
+        push r4 on stack r2
+        r5 := r5 / 10
+        r1 := r1 + 1
+        goto divisor_loop
+    ####################################################################
+    # counter_loop_setup
+    # (part of print_loop) sets the counter for the counter loop then goes
+    # there
+    ####################################################################
+    counter_loop_setup:
+        r5 := m[r0][r2]
+        goto counter_loop
+    ####################################################################
+    # counter_loop
+    # (part of print_loop) TODO TODO TODO TODO
+    ####################################################################
+    counter_loop: # r5 = num, r4 = divisor
+        if (r1 == 0) goto cleanup_stack
+        pop r4 off stack r2
+        output r4 + '0'
+        r1 := r1 - 1
+        goto counter_loop
+    ####################################################################
+    # cleanup_stack
+    # removes a 0 from the top of the callstack then goes back to the print
+    # loop
+    ####################################################################
+    cleanup_stack:
+        pop stack r2
+        goto print_loop
+    ####################################################################
+    # print_0
+    # outputs a zero
+    ####################################################################
+    print_0:
+        output "0"
+        goto print_loop
+    ####################################################################
+    # print_exit
+    # outs the newline char then leaves the print module to return to waiting
+    ####################################################################
+    print_exit:
+        output "\n"
+        goto waiting

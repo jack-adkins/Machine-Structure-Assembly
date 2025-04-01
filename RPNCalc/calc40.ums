@@ -1,0 +1,430 @@
+.section init
+    .temps r6, r7
+    .zero r0
+
+    ##############################################################################
+    # jumptable
+    # creates space for the jumptable then goes to where it gets populated
+    ##############################################################################
+    jumptable:
+        .space 256 # initialize space for the jump table
+        r5 := 0
+        goto fill_jumptable
+
+    ##############################################################################
+    # fill_jumptable
+    # populates the relevant lines in the jumptable with the labels they should
+    # each jump to
+    ##############################################################################
+    fill_jumptable:
+        r4 := jumptable + r5
+        m[r0][r4] := input_error
+        r5 := r5 + 1
+
+        if (r5 != 256) goto fill_jumptable using r5
+
+        m[r0][jumptable + '0'] := digit
+        m[r0][jumptable + '1'] := digit
+        m[r0][jumptable + '2'] := digit
+        m[r0][jumptable + '3'] := digit
+        m[r0][jumptable + '4'] := digit
+        m[r0][jumptable + '5'] := digit
+        m[r0][jumptable + '6'] := digit
+        m[r0][jumptable + '7'] := digit
+        m[r0][jumptable + '8'] := digit
+        m[r0][jumptable + '9'] := digit
+
+        m[r0][jumptable + ' '] := waiting
+        m[r0][jumptable + '\n'] := print_new_line # PRINT - TODO
+        m[r0][jumptable + '+'] := add
+        m[r0][jumptable + '*'] := mult
+        m[r0][jumptable + '-'] := sub
+        m[r0][jumptable + '/'] := div
+        m[r0][jumptable + '|'] := or
+        m[r0][jumptable + '&'] := and
+        m[r0][jumptable + 'c'] := changeSign
+        m[r0][jumptable + '~'] := bit_complement
+        m[r0][jumptable + 's'] := swap
+        m[r0][jumptable + 'd'] := duplicate
+        m[r0][jumptable + 'p'] := popoff
+        m[r0][jumptable + 'z'] := clear
+.section text
+    ######################################################################
+    # input_error
+    # prints an error if the char given as input isn't recognized
+    ######################################################################
+    input_error:
+        output "Unknown character '"
+        output r1
+        output "'\n"
+    ######################################################################
+    # pre_waiting
+    # puts the return address of main and the number of elements on the value
+    # stack on the call stack
+    ########################################################################
+    pre_waiting:
+        push r1 on stack r2
+        push 0 on stack r2 # num on calc stack
+        goto waiting
+    #########################################################################
+    # waiting
+    # gets input then goes to that input's spot in the jumptable
+    #########################################################################
+    waiting:
+        r1 := input()
+        r4 := ~r0
+        if (r4 == r1) goto exit using r5
+        r5 := jumptable + r1
+        goto m[r0][r5]
+    #########################################################################
+    # entering
+    # continues taking input for a multi-digit number until it's completely
+    # entered
+    #########################################################################
+    entering:
+        r1 := input()
+        r4 := ~r0
+        if (r4 == r1) goto exit using r5
+        r4 := jumptable + r1
+        if (r1 <s '0') goto m[r0][r4] using r5
+        if (r1 >s '9') goto m[r0][r4] using r5
+
+        pop r5 off stack r3
+
+        if (r5 == 0) goto entering
+
+        r5 := r5 * 10
+        r1 := r1 - '0'
+        r5 := r5 + r1
+
+        push r5 on stack r3
+
+        goto entering
+
+    #######################################################################
+    # digit
+    # pushes the number in r1 to the calcstack and increments the callstack
+    ########################################################################
+    digit:
+        r1 := r1 - '0'
+        push r1 on stack r3 # push onto calc stack
+        pop r5 off stack r2
+        r5 := r5 + 1
+        push r5 on stack r2
+
+        goto entering
+
+    #######################################################################
+    # add
+    # pops the top 2 numbers off the calcstack, adds them, then pushes their sum
+    # back onto the calcstack
+    ########################################################################
+    add:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        r4 := r4 + r5
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+
+        goto waiting
+
+    ########################################################################
+    # mult
+    # pops the top 2 numbers off the calcstack, multiplies them, then pushes their 
+    # product back onto the calcstack
+    ########################################################################
+    mult:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        r4 := r4 * r5
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+        
+        goto waiting
+
+    ######################################################################
+    # sub
+    # pops the top 2 numbers off the calcstack, subtracts the first from the 
+    # second, then pushes the difference back onto the calcstack
+    #########################################################################
+    sub:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        r4 := r5 - r4
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+        
+        goto waiting
+    #########################################################################
+    # div
+    # pops the top 2 numbers off the calcstack, divides the second by the 
+    # first, then pushes the result back onto the calcstack
+    #########################################################################
+    div:
+        goto check2 linking r5
+
+        if (m[r0][r3] == 0) goto div_by_zero using r4
+
+        pop r4 off stack r3 # y
+        pop r5 off stack r3 # x
+        if (r4 <s 0) goto y_neg using r1
+        if (r5 <s 0) goto x_neg using r1
+
+        r4 := r5 / r4
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+        
+        goto waiting
+    ########################################################################
+    # y_neg
+    # complete division on the top two elements on the stack if only the y value
+    # (the top of the stack) is negative
+    #########################################################################
+    y_neg:
+        if (r5 <s 0) goto double_neg_div using r1
+        
+        r4 := -r4
+
+        r5 := r5 / r4
+
+        r5 := -r5
+
+        push r5 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+
+        goto waiting
+    ##########################################################################
+    # x_neg
+    # complete division on the top two elements on the stack if only the x value
+    # (second from the top of the stack) is negative
+    ###########################################################################
+    x_neg:
+        r5 := -r5
+
+        r5 := r5 / r4
+
+        r5 := -r5
+
+        push r5 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+        
+        goto waiting
+    ########################################################################
+    # double_neg_div
+    # complete division on the top two elements on the stack if both are
+    # negative
+    ########################################################################
+    double_neg_div:
+        r4 := -r4
+        r5 := -r5
+
+        r5 := r5 / r4
+
+        push r5 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+        
+        goto waiting
+    ###########################################################################
+    # div_by_zero
+    # (part of div) outputs a div by zero message and goes back to waiting
+    ###########################################################################
+    div_by_zero:
+        output "Division by zero\n"
+        goto waiting
+    ##########################################################################
+    # or
+    # pops the top 2 numbers off the calcstack, performs a bitwise or on them,
+    # then pushes the result back onto the calcstack
+    ##########################################################################
+    or:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        r4 := r4 | r5
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+
+        goto waiting
+    #########################################################################
+    # and
+    # pops the top 2 numbers off the calcstack, performs a bitwise and on
+    # them, then pushes the result back onto the calcstack
+    #########################################################################
+    and:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        r4 := r4 & r5
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 - 1
+        push r4 on stack r2
+
+        goto waiting
+    ####################################################################
+    # changeSign
+    # pops the top number off the calcstack, multiplies it by -1, then pushes
+    # the result back onto the calcstack
+    ####################################################################
+    changeSign:
+        goto check1 linking r5
+
+        pop r5 off stack r3
+
+        r5 := -r5
+
+        push r5 on stack r3
+
+        goto waiting
+    ####################################################################
+    # bit_complement
+    # pops the top number off the calcstack, takes its bitwise complement, then 
+    # pushes the result back onto the calcstack
+    ####################################################################
+    bit_complement:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+
+        r4 := ~r4
+
+        push r4 on stack r3
+
+        goto waiting
+    ####################################################################
+    # swap
+    # pops the top 2 numbers off the calcstack, then pushes them back onto the
+    # callstack in the opposite order that they were originally in
+    ####################################################################
+    swap:
+        goto check2 linking r5
+
+        pop r4 off stack r3
+        pop r5 off stack r3
+
+        push r5 on stack r3
+        push r4 on stack r3
+
+        goto waiting
+    ####################################################################
+    # duplicate
+    # gets the number at the top of the calcstack, then pushes that same number
+    # onto the callstack
+    ####################################################################
+    duplicate:
+        goto check1 linking r5
+
+        r4 := m[r0][r3]
+
+        push r4 on stack r3
+
+        pop r4 off stack r2
+        r4 := r4 + 1
+        push r4 on stack r2
+
+        goto waiting
+    ####################################################################
+    # popoff
+    # pops off the number at the top of the calcstack and doesn't save it
+    ####################################################################
+    popoff:
+        goto check1 linking r5
+
+        pop stack r3
+
+        goto waiting
+    ####################################################################
+    # clear
+    # pops off the number at the top of the callstack and uses it to remove
+    # that many elements from the calcstack, effectively clearing it
+    ####################################################################
+    clear:
+        pop r4 off stack r2 # r4 has number of elements on calc stack
+        push 0 on stack r2
+        goto clear_loop
+    ####################################################################
+    # clear_loop
+    # uses a loop to clear all of the elements off the calc (value) stack
+    ####################################################################
+    clear_loop:
+        if (r4 == 0) goto waiting
+
+        pop stack r3
+        r4 := r4 - 1
+        goto clear_loop
+
+    ####################################################################
+    # check1
+    # checks if there is at least one element on the value stack by
+    # checking the top of the call stack, which stores that -
+    # if not, it will print an error message and go back to waiting
+    ####################################################################
+    check1:
+        r4 := m[r0][r2]
+        if (r4 >=s 1) goto r5 using r1
+        output "Stack underflow---expected at least 1 element\n"
+        goto waiting
+    ####################################################################
+    # check2
+    # checks if there is at least two elements on the value stack by
+    # checking the top of the call stack, which stores that -
+    # if not, it will print an error message and go back to waiting
+    ####################################################################
+    check2:
+        r4 := m[r0][r2]
+        if (r4 >=s 2) goto r5 using r1
+        output "Stack underflow---expected at least 2 elements\n"
+        goto waiting
+    ####################################################################
+    # exit
+    # empties the call stack to get the return address for main, where
+    # it goes back to (to halt)
+    ####################################################################
+    exit:
+        pop stack r2
+        pop r1 off stack r2
+        goto r1

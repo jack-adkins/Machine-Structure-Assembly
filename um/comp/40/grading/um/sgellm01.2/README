@@ -1,0 +1,186 @@
+UM
+Authors: Seth Gellman and Jack Adkins
+Acknowledgements: Many TAs were super helpful
+
+Implementation functionality:
+
+We believe that everything has been implemented correctly.
+
+Changes from design:
+
+Based on the advice from our design feedback, we tried to cut down our modules
+a lot. We removed the IO, command loop, and main modules, instead combining
+all three of them into one setup file. We removed a value containing the index
+of the current segment from our SegmentData struct since it was useless.
+
+UM Architecture:
+
+Our three modules were setup, instructions, and memory.
+
+In the setup/command loop module, everything needed for the program is
+initialized and instantiated for later use, mainly our struct SegmentData,
+which we use throughout the program to keep track of all our values. The
+main uses of this module are:
+
+- command line handling and any error messages
+- read in initial instructions and get the size of the file
+
+In the instructions module, our interface includes every instruction that
+can be done in the universal machine. We chose to do this because, even
+though it isn't the best for secret keeping, it was modular and very
+easy to add or remove any instruction from the interface. Thus, we
+found the ease in parsing through the code to be a more significant
+benefit than the slightly worse secret keeping. The main uses were:
+
+- running each instruction
+- checks each instruction given is valid and possible on the
+current iteration of the um (i.e. with existing segments etc.)
+
+In the memory module, our interface includes two functions: one to
+map a segment given an integer representing the size of the UArray to
+be, and one to unmap a segment given an index and a sequence. We tried
+to make this module accessible everyone else, where they may simply
+want to initialize a UArray of all 0s or remove a value from a sequence
+at a given index. In our case, it was all related to memory in the UM
+(which is the intended purpose), but we tried to make it able to hold
+on its own. The main purposes are:
+
+- create a new segment (as a UArray_T) to be mapped in the UM
+- remove a segment (unmap it) from a sequence containing each segment
+
+50 million instructions time:
+
+Since midmark.um took 8.25 seconds on our program, and midmark.um has
+80,000,000 instructions, we can assume that our program takes about 5
+seconds to do 50 million instructions.
+
+UM Unit Test Explanations:
+
+halt.um:
+    - Test the halt instruction
+    - Calls halt and expects program to end immediately
+halt-verbose.um:
+    - Tests that halt successfully stops future instructions from running
+    - Calls halt before a list of instructions that output 'Bad!' are called
+      and expects that nothing is output.
+output-test.um:
+    - Tests that we are able to send output
+    - Loads a value into a register then outputs it
+add-test.um:
+    - Basic test of the add function
+    - Does loadval on 2 different registers, adds those registers and outputs
+      the sum
+mult-test.um:
+    - Basic test of the mult function
+    - Does loadval on 2 different registers, multiplies those registers and 
+      outputs the product
+div-test.um:
+    - Basic test of the div function
+    - Does loadval on 2 different registers, divides those registers and 
+      outputs the dividend
+mult-div-test.um:
+    - Tests that multiplying a val by a number then dividing by the same number
+      gets the original val
+    - Does loadval on 2 different registers, multiplies the first by the second
+      then divides the result by the second, outputs the result(which is just 
+      the first number)
+allmath-test.um:
+    - Tests all different simple arithmetic operations together
+    - Does loadval on 3 different registers, adds the first two together,
+      multiplies the sum by the third, adds the first number to the product 
+      twice, then divides that sum by the third number then outputs.
+bnand-test.um:
+    - Test the bitwise not and returns the correct value
+    - Calls loadval on 2 different registers giving them large but similar
+      numbers. Performs bnand on the two values, then progressively loadvals
+      and divides the result of the bnand down until it is in range to be
+      output
+double-bnand-test.um:
+    - Tests the bnand's ability to undo itself
+    - Calls loadval on 2 different registers. Performs the same bnand on the 
+      2 values twice, then performs a third bnand on the results of both of
+      those (results are the same). Outputs the result of the third bnand
+      (which should just be the result of performing a regular bitwise and on
+      the original two numbers).
+map-test.um:
+    - Tests that we can map a new segment
+    - Calls map making sure nothing fails
+unmap-test.um:
+    - Tests that we can umap a segment
+    - Calls map to map a new segment, then calls unmap expecting that 
+      no errors rise and unampped segment's memory is freed
+unmap-many.um:
+    - Tests that the same index/segment can be repeatedly mapped and unampped
+    - Executes a for loop that runs 5000 times mapping and unmapping a segment
+      at the same index
+io.um:
+    - Tests the input fnctions ability to take and store input from stdin
+    - Calls input storing it in a register then outputs that register
+    - io.0: input for this test
+io-eof.um:
+    - Tests that input function can recognize the end of file
+    - Calls input taking in a single char, then calls input again to take in
+      what should be an eof (all 1s), then performs bnand and addtion to 
+      get that value in the valid output range and outputs it
+    - io-eof.0: input for this test
+cmov-exec.um:
+    - Tests the conditional move when the condition (!= 0) is met
+    - Loads different values that are all greater than 0 into 3 registers, 
+      then calls cmov moving the second register into the first with the third
+      as the condition (which passes), then outputs the second register
+cmov-n-exec.um:
+    - Tests the conditional move when the condition (!= 0) is not met
+    - Calls loadval on 2 different registers, with a third register already
+      having been intialized to 0. Calls cmov with the third register as the
+      condition, then outputs the second register making sure that it
+      hasn't changed
+lp.um:
+    - Tests the load program function on a segment that's not segment 0
+    - Loads the values needed to map a new segment, then calls sstore to change
+      a word. Calls loadprogram to go to a word in the newly mapped segment.
+      That word that the program counter gets set to is a halt instruction
+      which ends the test.  
+lp-0seg.um:
+    - Tests the load program function on segment 0
+    - Loads the values needed to then map a new segment, then calls sstore to
+      change a word. Calls loadprogram to go to a word already in segment 0.
+      That word that the program counter gets set to is a halt instruction
+      which ends the test. 
+segload.um:
+    - Tests that the segload function stores the instruction its supposed to
+    - Calls 4 loadval instructions to be refrenced later. Calls sload to get
+      the uint32_t for one of the loadval instructions and stores it in a
+      register, then keeps loading values dividing and adding to get the 
+      value in that register in range to be output.
+sstore.um:
+    - Tests that the sstore function chnages the value of a word
+    - Calls a short loop of the same loadval instruction, then maps a new
+      segment before calling sstore to change the word in the newly mapped
+      segment and halting which ends the test.
+sstore-0.um:
+    - Tests the sstore function on segment 0
+    - Calls a short loop of the same loadval instruction, then calls sstore to
+      change the fifth word in segment 0 beforing halting which ends the test
+long-test.um:
+    - An extensive test to test most of the functions available in the UM
+    - first, we load values into two registers before adding, dividing,
+    and multiplying those values while continuously outputting them to check
+    - we also map and unmap a segment,
+    while getting the index through input
+    - also tests sstore and sload to prove that they can basically be
+    used as inverses of each other
+    - finally, it calls load program on segment 0 and skips over the
+    second last line (which is output to prove that it is skipped) to reach
+    halt on the last line
+
+Time spent analyzing assignment:
+
+- 4 hours
+
+Time spent on design:
+
+- 7 hours
+
+Time spent on implementation:
+
+- 20 hours

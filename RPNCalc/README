@@ -1,0 +1,79 @@
+*******************************************************************************
+* Hw8: asmcoding
+* Comp 40 Fall 2024
+* README
+* Author: Jack Adkins (jadkin05) and Seth Gellman (sgellm01) 
+*******************************************************************************
+
+Acknowledgments: 
+----------------
+We had help from the wonderful TAs.
+
+Implementation: 
+------------------------
+Everything outlined in the spec is currently working. We followed
+the recommended calling convention.
+
+Print Module:
+-------------
+
+Value Stack:
+------------
+We gave the value stack the same amount of space as the callstack and are 
+using the register r3 to hold the address of the calcstack tag 
+(end of the value stack).
+
+Sections:
+---------
+callmain:
+    - init: declares the zero and temp registers
+    - text: holds the code that runs main
+urt0:
+    - init: declares the zero and temp registers, sets the endstack registers
+    - data: holds the callstack and calcstack (value stack)
+printd
+    - init: declares the zero and temp registers
+    - text: holds the code for printing the current calcstack
+calc40:
+    - init: declares the zero and temp registers and populates the jump table
+            with the correct jump locations
+    - text: holds the code that does the calculator functions (operators,
+            waiting, etc.)
+
+Hours Spent: 
+------------
+Analyzing: 3
+Writing: 7
+Debugging: 5
+
+/*
+*     callmain.ums
+*     jadkin05, sgellm01, 12/11/2024
+*     asmcoding
+*     
+*     calls the main program
+*/
+
+/*
+*     calc40.ums
+*     jadkin05, sgellm01, 12/11/2024
+*     asmcoding
+*     
+*     implements the RPN calculator's functionality
+*/
+
+/*
+*     printd.ums
+*     jadkin05, sgellm01, 12/11/2024
+*     asmcoding
+*     
+*     prints out the current calcstack
+*/
+
+/*
+*     urt0.ums
+*     jadkin05, sgellm01, 12/11/2024
+*     asmcoding
+*     
+*     holds the calc and value stack
+*/

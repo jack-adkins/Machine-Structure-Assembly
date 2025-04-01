@@ -1,0 +1,20 @@
+.section init
+    .temps r6, r7
+    .zero r0
+
+.section data
+    .space 1000000 # call stack
+        endstack:
+    .space 1000000 # calc stack
+        calcstack:
+
+.section init
+    ####################################################################
+    # start
+    # sets the zero, endstack(callstack), and calcstack registers to what
+    # they'll represnt for the rest of the program
+    ####################################################################
+    start:
+        r0 := 0
+        r2 := endstack
+        r3 := calcstack

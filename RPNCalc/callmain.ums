@@ -1,0 +1,7 @@
+.section init
+    .temps r6, r7
+    goto main
+.section text
+    main:
+        goto pre_waiting linking r1
+        halt

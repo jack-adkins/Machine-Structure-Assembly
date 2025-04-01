@@ -1,0 +1,98 @@
+fill_jumptable: 
+    r5 = 0
+    m[r0][jumptable + r5] := input_error
+    r5 := r5 + 1
+    if (r5 != 256)
+        goto fill_jumptable
+    m[r0][jumptable + '0'] = digit
+    m[r0][jumptable + '1'] = digit
+    m[r0][jumptable + '2'] = digit
+    m[r0][jumptable + '3'] = digit
+    m[r0][jumptable + '4'] = digit
+    m[r0][jumptable + '5'] = digit
+    m[r0][jumptable + '6'] = digit
+    m[r0][jumptable + '7'] = digit
+    m[r0][jumptable + '8'] = digit
+    m[r0][jumptable + '9'] = digit
+
+    m[r0][jumptable + ' '] = waiting
+    m[r0][jumptable + '/n'] = newline #todo in print later
+    m[r0][jumptable + '+'] = add
+    m[r0][jumptable + ' '] = space
+    m[r0][jumptable + ' '] = space
+    m[r0][jumptable + ' '] = space
+    m[r0][jumptable + ' '] = space
+    m[r0][jumptable + ' '] = space
+    m[r0][jumptable + ' '] = space
+
+    m[r0][jumptable + '*'] = mul
+
+digit:
+    r1 := r1 - '0'
+    push r1 on stack r2 # calc stack
+    goto entering
+
+waiting:
+    r1 := input()
+    r5 = jumptable + r1
+    r5 = m[r0][r5]
+    goto r5
+
+
+entering:
+    r1 := input() #3
+    if (r1 > '9' or r1 < '0') 
+        goto m[r0][jumptable + r1]
+    
+    push r1 on stack r2 # 3 (new)
+    pop r5 off stack r3 # 5 (old)
+    push r5 on stack r2 # 5 (old)
+
+    r4 := 0
+    if ()
+    goto count_digits
+    cont_entering:
+        r0 := 0
+        r5 := r5 * r3
+        r3 := r3 * r1
+        r3 := r3 + r5
+        push r3 on stack r2
+        goto entering
+# Not using 5,6,7
+
+# Check if 
+count_digits:
+    r5 := 1
+    push r4 stack r2
+    if (r5 <s 1) goto calc_exponent using r4
+    r5 = r5 / 10 
+    r4 := r4 + 1
+    goto count_digits
+
+calc_exponent:
+    pop r4 
+    if (r4 == 0) goto cont_entering using r0
+    r3 := r3 * 10
+    r4 := r4 - 1
+    goto calc_exponent
+
+add:
+    pop r6 off stack r2
+    pop r7 off stack r2
+    r6 := r6 + r7
+    push r6 on stack r2
+
+
+print:
+
+
+
+print_func:
+    pop r4 off stack r2
+    if (r4 <= 9 and r4 >= 0)
+        output (r4 + '0')
+    
+    
+
+
+
